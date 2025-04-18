@@ -13,8 +13,8 @@ def calculate_bmi(height_cm, weight_kg):
 # App layout
 st.title("Evaluación de Riesgo para Tamizaje de Cáncer Colorrectal")
 st.markdown("""
-Esta herramienta te ayuda a evaluar tu riesgo para cáncer colorrectal basado en recomendaciones actuales.
-Por favor completa los siguientes datos:
+Esta herramienta te ayuda a evaluar tu riesgo para cáncer colorrectal basado en las recomendaciones vigentes en Argentina.
+Dirigida a personas de riesgo promedio, sin antecedentes personales ni familiares de CCR o síndromes hereditarios conocidos.
 """)
 
 # Input fields
@@ -22,11 +22,17 @@ dob = st.date_input("Fecha de nacimiento")
 height_cm = st.number_input("Altura (cm)", min_value=100, max_value=250, step=1)
 weight_kg = st.number_input("Peso (kg)", min_value=30, max_value=200, step=1)
 
+# Risk factor checkboxes
 ibd = st.checkbox("¿Tienes enfermedad inflamatoria intestinal (Crohn o colitis ulcerativa)?")
 family_crc = st.checkbox("¿Tienes un familiar de primer grado con cáncer colorrectal?")
 hereditary_syndrome = st.checkbox("¿Tienes un síndrome hereditario conocido como el síndrome de Lynch?")
 family_before_60 = st.checkbox("¿Ese familiar fue diagnosticado antes de los 60 años?")
 polyp_checkbox = st.checkbox("¿Te han dicho en los últimos 10 años que tenías un pólipo en el colon o recto? (Un pólipo es un pequeño crecimiento que se desarrolla en el interior del colon o recto.)")
+advanced_adenoma = st.checkbox("¿Te han extirpado previamente pólipos o adenomas avanzados?")
+fap = st.checkbox("¿Tienes diagnóstico de poliposis adenomatosa familiar (PAF)?")
+serrated_polyps = st.checkbox("¿Te han diagnosticado poliposis serrada o pólipos múltiples?")
+other_hereditary = st.checkbox("¿Tienes antecedentes familiares de otros síndromes genéticos (Peutz-Jeghers, Cowden, etc.)?")
+symptoms = st.checkbox("¿Tienes síntomas como sangrado rectal, cambios recientes en el hábito intestinal, o pérdida de peso sin causa conocida?")
 
 # Output results
 if dob and height_cm and weight_kg:
@@ -39,19 +45,19 @@ if dob and height_cm and weight_kg:
     st.markdown("---")
     st.subheader("Resultado de la evaluación")
 
-    if ibd:
-        st.warning("Riesgo alto: Se recomienda colonoscopia cada 1-2 años con vigilancia endoscópica especializada.")
-    elif hereditary_syndrome:
-        st.warning("Riesgo alto: Iniciar colonoscopia a los 20-25 años o antes según antecedentes familiares.")
-    elif family_crc and family_before_60:
-        st.info("Riesgo moderado: Iniciar colonoscopia a los 40 años o 10 años antes del diagnóstico familiar, cada 5 años.")
-    elif family_crc:
-        st.info("Riesgo incrementado: Colonoscopia periódica según evaluación médica.")
-    elif age >= 50:
-        st.success("Riesgo promedio: Iniciar tamizaje con SOMFi cada 2 años o colonoscopia cada 10 años.")
-    else:
-        st.info("Actualmente no se recomienda tamizaje si no hay factores de riesgo adicionales y tienes menos de 50 años.")
+    # High-risk exclusions
+    if ibd or hereditary_syndrome or family_crc or advanced_adenoma or fap or serrated_polyps or other_hereditary:
+        st.warning("Tu perfil indica un riesgo elevado. Se recomienda derivación a consulta médica especializada para seguimiento individualizado.")
+    elif polyp_checkbox:
+        st.info("Historial de pólipos: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
+    elif symptoms:
+        st.warning("Síntomas presentes: Se recomienda evaluación médica inmediata para descartar patología activa.")
+    elif age < 50:
+        st.info("Actualmente no se recomienda tamizaje si tienes menos de 50 años y no presentas factores de riesgo adicionales.")
+    elif 50 <= age <= 75:
+        st.success("Riesgo promedio: Iniciar tamizaje con test de sangre oculta en materia fecal inmunoquímico (TSOMFi) cada 2 años o colonoscopia cada 10 años.")
+    elif age > 75:
+        st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación médica individualizada.")
 
     if bmi >= 25:
-        st.markdown("**Nota:** Tu IMC sugiere sobrepeso, lo cual es un factor de riesgo adicional para cáncer colorrectal.")
-
+        st.markdown("**Nota:** Tu IMC sugiere sobrepeso, lo cual puede ser un factor de riesgo adicional para cáncer colorrectal.")
