@@ -45,4 +45,12 @@ if dob and height_cm and weight_kg:
     elif family_crc and family_before_60:
         st.info("Riesgo moderado: Iniciar colonoscopia a los 40 años o 10 años antes del diagnóstico familiar, cada 5 años.")
     elif family_crc:
-        st.info("Riesgo Incrementado: Colonoscopia periódica segun evaluacion medica.")
+        st.info("Riesgo incrementado: Colonoscopia periódica según evaluación médica.")
+    elif age >= 50:
+        st.success("Riesgo promedio: Iniciar tamizaje con SOMFi cada 2 años o colonoscopia cada 10 años.")
+    else:
+        st.info("Actualmente no se recomienda tamizaje si no hay factores de riesgo adicionales y tienes menos de 50 años.")
+
+    if bmi >= 25:
+        st.markdown("**Nota:** Tu IMC sugiere sobrepeso, lo cual es un factor de riesgo adicional para cáncer colorrectal.")
+
