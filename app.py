@@ -26,6 +26,7 @@ ibd = st.checkbox("¿Tienes enfermedad inflamatoria intestinal (Crohn o colitis 
 family_crc = st.checkbox("¿Tienes un familiar de primer grado con cáncer colorrectal?")
 hereditary_syndrome = st.checkbox("¿Tienes un síndrome hereditario conocido como el síndrome de Lynch?")
 family_before_60 = st.checkbox("¿Ese familiar fue diagnosticado antes de los 60 años?")
+polyp_checkbox = st.checkbox("¿Te han dicho en los últimos 10 años que tenías un pólipo en el colon o recto? (Un pólipo es un pequeño crecimiento que se desarrolla en el interior del colon o recto.)")
 
 # Output results
 if dob and height_cm and weight_kg:
