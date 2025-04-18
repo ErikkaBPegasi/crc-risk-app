@@ -75,6 +75,15 @@ if dob and height_cm is not None and weight_kg is not None:
             "**Riesgo incrementado**: Antecedentes personales o familiares fuertes (CCR, Lynch, PAF/PAFA, poliposis hamartomatosa o serrada, EII)."
             " Se recomienda derivación a consulta médica especializada."
         )
+        # Estrategia de tamizaje para riesgo incrementado
+        st.markdown(
+            """
+            Estrategia de tamizaje recomendada para riesgo incrementado:
+            - Colonoscopia cada 5 años, iniciando a los 40 años o 10 años antes de la edad del caso familiar más joven.
+            - Para EII: colonoscopia de vigilancia según función de riesgo (entre 1-5 años).
+            - En caso de sospecha de síndrome hereditario (Lynch): colonoscopia cada 1-2 años a partir de los 20-30 años según gen.
+            """
+        )
     elif polyp_checkbox:
         st.info("**Historial de pólipos**: Consulta médica y posible colonoscopia.")
     elif symptoms:
