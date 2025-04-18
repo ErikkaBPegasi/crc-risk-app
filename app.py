@@ -18,10 +18,10 @@ Dirigida a personas de riesgo promedio, sin antecedentes personales ni familiare
 """)
 
 # Input fields
-# Allow dates back to 1900-01-01 to accommodate older birth dates
+# Set explicit min and max for date of birth picker
 dob = st.date_input(
     "Fecha de nacimiento",
-    min_value=datetime(1900, 1, 1),
+    min_value=datetime(1900, 1, 1),  # allow birthdates as early as 1900
     max_value=datetime.today()
 )
 height_cm = st.number_input("Altura (cm)", min_value=100, max_value=250, step=1)
@@ -37,9 +37,9 @@ advanced_adenoma = st.checkbox("¿Te han extirpado previamente pólipos o adenom
 fap = st.checkbox("¿Tienes diagnóstico de poliposis adenomatosa familiar (PAF)?")
 serrated_polyps = st.checkbox("¿Te han diagnosticado poliposis serrada o pólipos múltiples?")
 other_hereditary = st.checkbox("¿Tienes antecedentes familiares de otros síndromes genéticos (Peutz-Jeghers, Cowden, etc.)?")
-symptoms = st.checkbox("¿Tienes síntomas como sangrado rectal, cambios recientes en el hábito intestinal, o pérdida de peso sin causa conocida?")
+symptoms = st.checkbox("¿Tienes síntomas como sangrado rectal, cambios recientes en el hábito intestinal, o pérdida de peso sin causa conocida?" )
 
-# Output results
+# Compute outputs
 if dob and height_cm and weight_kg:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
@@ -50,41 +50,32 @@ if dob and height_cm and weight_kg:
     st.markdown("---")
     st.subheader("Resultado de la evaluación")
 
-    # Validate date of birth before other checks
+    # Validate date before anything else
     if age <= 0:
         st.error("Fecha de nacimiento inválida. Por favor selecciona una fecha anterior a hoy.")
         st.stop()
 
-        # High-risk exclusions (Riesgo incrementado)
+    # High-risk: Riesgo incrementado
     if ibd or hereditary_syndrome or family_crc or advanced_adenoma or fap or serrated_polyps or other_hereditary:
         st.warning(
-            "**Riesgo incrementado**: Personas con antecedentes familiares de CCR, síndrome de Lynch, poliposis adenomatosa familiar (PAF/PAFA), "
-            "síndromes de poliposis hamartomatosa o serrada, o EII. Se recomienda derivación a consulta médica especializada."
+            "**Riesgo incrementado**: Personas con antecedentes familiares de CCR, síndrome de Lynch, PAF/PAFA, poliposis hamartomatosa, serrada o EII."
+            " Se recomienda derivación a consulta médica especializada."
         )
     elif polyp_checkbox:
-        st.info("Historial de pólipos: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
+        st.info("**Historial de pólipos**: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
     elif symptoms:
-        st.warning("Síntomas presentes: Se recomienda evaluación médica inmediata para descartar patología activa.")
-    # Age-based average risk
+        st.warning("**Síntomas presentes**: Se recomienda evaluación médica inmediata para descartar patología activa.")
+    # Average-risk flow
     elif age < 50:
         st.info("Actualmente no se recomienda tamizaje si tienes menos de 50 años y no presentas factores de riesgo adicionales.")
     elif age <= 75:
         st.success(
-            "**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes." +
+            "**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes."
             " Iniciar tamizaje con TSOMFi cada 2 años o colonoscopia cada 10 años."
         )
     else:
         st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación médica individualizada.")
-        st.info("Historial de pólipos: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
-    elif symptoms:
-        st.warning("Síntomas presentes: Se recomienda evaluación médica inmediata para descartar patología activa.")
-    elif age < 50:
-        st.info("Actualmente no se recomienda tamizaje si tienes menos de 50 años y no presentas factores de riesgo adicionales.")
-    elif age <= 75:
-        st.success("Riesgo promedio: Iniciar tamizaje con test de sangre oculta en materia fecal inmunoquímico (TSOMFi) cada 2 años o colonoscopia cada 10 años.")
-    else:
-        st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación médica individualizada.")
 
-    # Additional note
+    # Note on BMI
     if bmi >= 25:
         st.markdown("**Nota:** Tu IMC sugiere sobrepeso, lo cual puede ser un factor de riesgo adicional para cáncer colorrectal.")
