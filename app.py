@@ -45,4 +45,4 @@ if dob and height_cm and weight_kg:
     elif family_crc and family_before_60:
         st.info("Riesgo moderado: Iniciar colonoscopia a los 40 años o 10 años antes del diagnóstico familiar, cada 5 años.")
     elif family_crc:
-        st.info("R
+        st.info("Riesgo Incrementado: Colonoscopia periódica segun evaluacion medica.")
