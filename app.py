@@ -20,18 +20,16 @@ st.markdown(
 )
 
 # Input fields
-# Date of birth picker
 dob = st.date_input(
     "Fecha de nacimiento",
-    min_value=datetime(1900, 1, 1),  # allow birthdates as early as 1900
+    min_value=datetime(1900, 1, 1),
     max_value=datetime.today()
 )
 
-# Height and weight inputs as free text
 height_str = st.text_input("Altura (cm)", value="")
 weight_str = st.text_input("Peso (kg)", value="")
 
-# Try to parse height and weight
+# Parse height and weight
 height_cm = None
 weight_kg = None
 if height_str:
@@ -49,32 +47,24 @@ if weight_str:
 ibd = st.checkbox("¿Tienes enfermedad inflamatoria intestinal (Crohn o colitis ulcerativa)?")
 family_crc = st.checkbox("¿Tienes un familiar de primer grado con cáncer colorrectal?")
 hereditary_syndrome = st.checkbox("¿Tienes un síndrome hereditario conocido como el síndrome de Lynch?")
-family_before_60 = st.checkbox("¿Ese familiar fue diagnosticado antes de los 60 años?")
-polyp_checkbox = st.checkbox(
-    "¿Te han dicho en los últimos 10 años que tenías un pólipo en el colon o recto? (Un pólipo es un pequeño crecimiento en el colon o recto.)"
-)
 advanced_adenoma = st.checkbox("¿Te han extirpado previamente pólipos o adenomas avanzados?")
 fap = st.checkbox("¿Tienes diagnóstico de poliposis adenomatosa familiar (PAF)?")
 serrated_polyps = st.checkbox("¿Te han diagnosticado poliposis serrada o pólipos múltiples?")
-other_hereditary = st.checkbox(
-    "¿Tienes antecedentes familiares de otros síndromes genéticos (Peutz-Jeghers, Cowden, etc.)?"
-)
-symptoms = st.checkbox(
-    "¿Tienes síntomas como sangrado rectal, cambios recientes en el hábito intestinal, o pérdida de peso sin causa conocida?"
-)
+other_hereditary = st.checkbox("¿Tienes antecedentes familiares de otros síndromes genéticos (Peutz-Jeghers, Cowden, etc.)?")
+polyp_checkbox = st.checkbox("¿Te han dicho en los últimos 10 años que tenías un pólipo en el colon o recto? (Un pólipo es un pequeño crecimiento en el colon o recto.)")
+symptoms = st.checkbox("¿Tienes síntomas como sangrado rectal, cambios recientes en el hábito intestinal, o pérdida de peso sin causa conocida?")
 
-# Compute outputs if inputs valid
+# Compute outputs
 if dob and height_cm is not None and weight_kg is not None:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
 
     st.markdown(f"**Edad**: {age} años")
     st.markdown(f"**Índice de Masa Corporal (IMC)**: {bmi}")
-
     st.markdown("---")
     st.subheader("Resultado de la evaluación")
 
-    # Validate date
+    # Validate logical age
     if age <= 0:
         st.error("Fecha de nacimiento inválida. Selecciona una fecha anterior a hoy.")
         st.stop()
@@ -82,7 +72,7 @@ if dob and height_cm is not None and weight_kg is not None:
     # Risk stratification
     if any([ibd, hereditary_syndrome, family_crc, advanced_adenoma, fap, serrated_polyps, other_hereditary]):
         st.warning(
-            "**Riesgo incrementado**: Antecedentes de CCR, Lynch, PAF/PAFA, poliposis hamartomatosa o serrada, o EII."
+            "**Riesgo incrementado**: Antecedentes personales o familiares fuertes (CCR, Lynch, PAF/PAFA, poliposis hamartomatosa o serrada, EII)."
             " Se recomienda derivación a consulta médica especializada."
         )
     elif polyp_checkbox:
@@ -91,21 +81,20 @@ if dob and height_cm is not None and weight_kg is not None:
         st.warning("**Síntomas presentes**: Evaluación médica inmediata.")
     elif age < 50:
         st.info("No se recomienda tamizaje si tienes menos de 50 años sin factores de riesgo adicionales.")
-        elif age <= 75:
-        st.success("**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes.")
-        # Screening strategy per guidelines
+    elif age <= 75:
+        st.success("**Riesgo promedio**: Personas de 50–75 años sin antecedentes ni factores de riesgo fuertes.")
         st.markdown(
-            "- Test de sangre oculta en materia fecal inmunoquímico (TSOMFi)
-"
-            "- Test de sangre oculta en materia fecal con guayaco (TSOMFg)
-"
-            "- Rectosigmoidoscopía flexible (RSC)
-"
-            "- Videocolonoscopía (VCC)"
+            """
+            Opciones de tamizaje recomendadas:
+            - Test de sangre oculta en materia fecal inmunoquímico (TSOMFi)
+            - Test de sangre oculta en materia fecal con guayaco (TSOMFg)
+            - Rectosigmoidoscopía flexible (RSC)
+            - Videocolonoscopía (VCC)
+            """
         )
     else:
-        st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación individualizada.")
+        st.warning("No se recomienda tamizaje programático en mayores de 75 años salvo evaluación individualizada.")
 
     # BMI note
     if bmi >= 25:
-        st.markdown("**Nota:** Tu IMC sugiere sobrepeso, un factor de riesgo adicional.")
+        st.markdown("**Nota:** Tu IMC sugiere sobrepeso, un factor de riesgo adicional para CCR.")
