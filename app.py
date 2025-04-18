@@ -92,15 +92,14 @@ if dob and height_cm is not None and weight_kg is not None:
     elif age < 50:
         st.info("No se recomienda tamizaje si tienes menos de 50 años sin factores de riesgo adicionales.")
     elif age <= 75:
-        st.success("**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes."
-                   )
+        st.success("**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes.")
         st.markdown(
-            "- Test de sangre oculta en materia fecal inmunoquímico (TSOMFi)  "
-            "- Test de sangre oculta en materia fecal con guayaco (TSOMFg)  
-"
-            "- Rectosigmoidoscopía flexible (RSC)  
-"
-            "- Videocolonoscopía (VCC)"
+            """
+            - Test de sangre oculta en materia fecal inmunoquímico (TSOMFi)
+            - Test de sangre oculta en materia fecal con guayaco (TSOMFg)
+            - Rectosigmoidoscopía flexible (RSC)
+            - Videocolonoscopía (VCC)
+            """
         )
     else:
         st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación individualizada.")
