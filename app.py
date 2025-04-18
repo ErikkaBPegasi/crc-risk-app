@@ -92,9 +92,19 @@ if dob and height_cm and weight_kg:
         st.warning("**Síntomas presentes**: Evaluación médica inmediata.")
     elif age < 50:
         st.info("No se recomienda tamizaje si tienes menos de 50 años sin factores de riesgo.")
-    elif age <= 75:
+        elif age <= 75:
         st.success(
-            "**Riesgo promedio**: Sin antecedentes; iniciar TSOMFi cada 2 años o colonoscopia cada 10 años."
+            "**Riesgo promedio**: Sin antecedentes; iniciar tamizaje según las siguientes opciones:"
+        )
+        # Screening strategy per guidelines
+        st.markdown(
+            "- Test de sangre oculta en materia fecal inmunoquímico (TSOMFi)
+"
+            "- Test de sangre oculta en materia fecal con guayaco (TSOMFg)
+"
+            "- Rectosigmoidoscopía flexible (RSC)
+"
+            "- Videocolonoscopía (VCC)"
         )
     else:
         st.warning(
