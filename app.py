@@ -55,10 +55,26 @@ if dob and height_cm and weight_kg:
         st.error("Fecha de nacimiento inválida. Por favor selecciona una fecha anterior a hoy.")
         st.stop()
 
-    # High-risk exclusions
+        # High-risk exclusions (Riesgo incrementado)
     if ibd or hereditary_syndrome or family_crc or advanced_adenoma or fap or serrated_polyps or other_hereditary:
-        st.warning("Tu perfil indica un riesgo elevado. Se recomienda derivación a consulta médica especializada para seguimiento individualizado.")
+        st.warning(
+            "**Riesgo incrementado**: Personas con antecedentes familiares de CCR, síndrome de Lynch, poliposis adenomatosa familiar (PAF/PAFA), "
+            "síndromes de poliposis hamartomatosa o serrada, o EII. Se recomienda derivación a consulta médica especializada."
+        )
     elif polyp_checkbox:
+        st.info("Historial de pólipos: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
+    elif symptoms:
+        st.warning("Síntomas presentes: Se recomienda evaluación médica inmediata para descartar patología activa.")
+    # Age-based average risk
+    elif age < 50:
+        st.info("Actualmente no se recomienda tamizaje si tienes menos de 50 años y no presentas factores de riesgo adicionales.")
+    elif age <= 75:
+        st.success(
+            "**Riesgo promedio**: Personas sin antecedentes personales ni familiares de CCR ni enfermedades predisponentes." +
+            " Iniciar tamizaje con TSOMFi cada 2 años o colonoscopia cada 10 años."
+        )
+    else:
+        st.warning("No se recomienda tamizaje programático en mayores de 75 años, salvo evaluación médica individualizada.")
         st.info("Historial de pólipos: Consulta médica recomendada para evaluación personalizada y posible colonoscopia.")
     elif symptoms:
         st.warning("Síntomas presentes: Se recomienda evaluación médica inmediata para descartar patología activa.")
@@ -72,4 +88,3 @@ if dob and height_cm and weight_kg:
     # Additional note
     if bmi >= 25:
         st.markdown("**Nota:** Tu IMC sugiere sobrepeso, lo cual puede ser un factor de riesgo adicional para cáncer colorrectal.")
-
