@@ -43,8 +43,8 @@ if weight_str:
 
 # 1. Antecedentes personales de salud
 st.markdown("**1. Antecedentes personales de salud**")
-ibd = st.checkbox("¿Tenés enfermedad intestinal inflamatoria como Crohn o colitis ulcerosa?")
-hered = st.checkbox("¿Algún médico te dijo que tenés un síndrome hereditario como el de Lynch?")
+ibd = st.checkbox("¿Tenés enfermedad intestinal inflamatoria como Crohn o colitis ulcerosa?", help="Estas enfermedades aumentan el riesgo de cáncer colorrectal y requieren vigilancia especial.")
+hered = st.checkbox("¿Algún médico te dijo que tenés un síndrome hereditario como el de Lynch?", help="El síndrome de Lynch es una condición genética que aumenta el riesgo de cáncer colorrectal y otros tipos de cáncer.")
 hamart = st.checkbox("¿Te diagnosticaron un síndrome de pólipos hereditarios como Peutz-Jeghers o Cowden?")
 fap = st.checkbox("¿Tenés diagnóstico de poliposis adenomatosa familiar (PAF)?")
 fasha = st.checkbox("¿Tenés diagnóstico de poliposis adenomatosa familiar atenuada (PAFA)?")
@@ -52,14 +52,14 @@ serrated_synd = st.checkbox("¿Te diagnosticaron síndrome de poliposis serrada 
 
 # 2. Antecedentes familiares
 st.markdown("**2. Antecedentes familiares**")
-family_crc = st.checkbox("¿Tenés un familiar directo (padre/madre/hermano/a/hijo/a) con cáncer colorrectal?")
+family_crc = st.checkbox("¿Tenés un familiar directo (padre/madre/hermano/a/hijo/a) con cáncer colorrectal?", help="El riesgo aumenta si un familiar cercano tuvo cáncer colorrectal, especialmente si fue antes de los 60 años.")
 family_before_60 = False
 if family_crc:
     family_before_60 = st.checkbox("¿Ese familiar fue diagnosticado antes de los 60 años?")
 
 # 3. Historial de pólipos en colon o recto
 st.markdown("**3. Historial de pólipos**")
-polyp10 = st.checkbox("Durante los últimos 10 años, ¿algún médico te dijo que tenías pólipos en el colon o el recto?")
+polyp10 = st.checkbox("Durante los últimos 10 años, ¿algún médico te dijo que tenías pólipos en el colon o el recto?", help="Los pólipos pueden ser precursores del cáncer colorrectal, por eso es importante informar si fueron detectados.")
 advanced_poly = False
 serrated = False
 resected = False
@@ -67,6 +67,9 @@ if polyp10:
     advanced_poly = st.checkbox("¿Alguno de esos pólipos fue grande (más de 1 cm) o de alto riesgo?")
     serrated = st.checkbox("¿Alguno de los pólipos era del tipo serrado?")
     resected = st.checkbox("¿Te realizaron una resección o extirpación de esos pólipos o adenomas?")
+
+# Evaluación de síntomas (fuera del bloque de riesgo)
+symptoms = st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?")
 
 # Evaluación de riesgo y recomendaciones
 if dob and height_cm and weight_kg:
@@ -101,8 +104,6 @@ if dob and height_cm and weight_kg:
     elif polyp10 and resected:
         st.info("Riesgo Intermedio: Pólipos simples resecados")
         st.markdown("Colonoscopia a los 5 años.")
-    elif symptoms := st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?"):
-        st.warning("Síntomas clínicos: requiere colonoscopia inmediata")
     elif family_crc:
         if family_before_60:
             st.info("Riesgo Incrementado: Familiar <60 años")
@@ -112,7 +113,16 @@ if dob and height_cm and weight_kg:
             st.markdown("Colonoscopia a los 50 años + repetir cada 5 años.")
     elif 50 <= age <= 75:
         st.success("Riesgo Promedio")
-        st.markdown("TSOMFi cada 2 años, colonoscopia cada 10 años, VCC cada 5 años, etc.")
+        st.markdown("""
+        **Tu médico puede ayudarte a revisar las siguientes opciones disponibles de tamizaje, considerando la disponibilidad de las pruebas con tu prestador de salud:**
+
+        - ✅ **Test de sangre oculta inmunoquímico (TSOMFi)** cada 2 años *(recomendado como primera opción)*
+        - 🟡 **Test con guayaco (TSOMFg)** cada 2 años *(si no se dispone de TSOMFi)*
+        - 🔍 **Colonoscopia** cada 10 años
+        - 📹 **Videocolonoscopía (VCC)** cada 5 años
+        - 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
+        - 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
+        """)
     elif age < 50:
         st.info("Menor de 50 años sin factores: no requiere tamizaje")
     elif age > 75:
@@ -122,6 +132,12 @@ if dob and height_cm and weight_kg:
     if bmi >= 25:
         st.markdown("**Nota:** IMC elevado: factor de riesgo adicional.")
 
+    # Síntomas aparte
+    if symptoms:
+        st.markdown("---")
+        st.warning("**Atención:** Presentás síntomas clínicos (sangrado, cambios intestinales o pérdida de peso sin causa aparente). Se recomienda evaluación médica con colonoscopia inmediata.")
+
 # Disclaimer
 st.markdown("---")
-st.markdown("**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.")
+st.markdown("""**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.  
+📄 [Accedé a la guía oficial del Instituto Nacional del Cáncer](https://bancos.salud.gob.ar/sites/default/files/2023-09/recomendaciones-para-el-tamizaje-organizado-cancer-colorrectal-poblacion-de-riesgo-promedio-argentina.pdf)""")
