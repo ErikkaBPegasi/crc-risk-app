@@ -62,110 +62,66 @@ st.markdown("**3. Historial de pólipos**")
 polyp10 = st.checkbox("Durante los últimos 10 años, ¿algún médico te dijo que tenías pólipos en el colon o el recto?")
 advanced_poly = False
 serrated = False
+resected = False
 if polyp10:
     advanced_poly = st.checkbox("¿Alguno de esos pólipos fue grande (más de 1 cm) o de alto riesgo?")
     serrated = st.checkbox("¿Alguno de los pólipos era del tipo serrado?")
+    resected = st.checkbox("¿Te realizaron una resección o extirpación de esos pólipos o adenomas?")
 
-# 4. Síntomas actuales
-st.markdown("**4. Síntomas actuales**")
-symptoms = st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?")
-
-# Cálculo y resultados
-if dob and height_cm is not None and weight_kg is not None:
+# Evaluación de riesgo y recomendaciones
+if dob and height_cm and weight_kg:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
-    st.markdown(f"**Edad:** {age} años   **IMC:** {bmi}")
+
+    st.markdown(f"**Edad:** {age} años | **IMC:** {bmi}")
     st.markdown("---")
-    st.subheader("Resultados y estrategia de tamizaje")
+    st.subheader("Estrategia de tamizaje recomendada")
 
-    # Validar edad
-    if age < 0 or age > 120:
-        st.error("Fecha inválida.")
-        st.stop()
-
-    # 1. Riesgo Alto por condición específica
     if hered:
-        st.warning("**Riesgo Alto: Lynch**")
-        st.markdown(
-            "- Colonoscopia cada 1–2 años\n- TSOMFi anual o TSOMFg bienal"
-        )
-    elif serrated_synd:
-        st.warning("**Riesgo Alto: pólipos serrados**")
-        st.markdown(
-            "- Colonoscopia anual\n- Evaluación genética"
-        )
-    elif hamart:
-        st.warning("**Riesgo Alto: síndrome hamartomatoso**")
-        st.markdown(
-            "- Colonoscopia cada 1–2 años\n- TSOMFi anual o TSOMFg bienal"
-        )
-    elif fap:
-        st.warning("**Riesgo Alto: PAF**")
-        st.markdown(
-            "- Colonoscopia cada 1–5 años\n- TSOMFi anual o TSOMFg bienal"
-        )
-    elif fasha:
-        st.warning("**Riesgo Alto: PAFA**")
-        st.markdown(
-            "- Colonoscopia cada 1–5 años\n- TSOMFi anual o TSOMFg bienal"
-        )
+        st.warning("Riesgo Alto: Síndrome de Lynch")
+        st.markdown("Colonoscopia cada 1–2 años.")
     elif ibd:
-        st.warning("**Riesgo Alto: EII**")
-        st.markdown(
-            "- Colonoscopia cada 1–5 años\n- TSOMFi anual o TSOMFg bienal"
-        )
-
-    # 2. Historial de pólipos específicos
-    elif polyp10 and advanced_poly:
-        st.warning("**Riesgo Alto: adenoma avanzado**")
-        st.markdown(
-            "- Colonoscopia de control a los 3 años\n- FIT o FOBT anual"
-        )
-    elif polyp10 and serrated:
-        st.warning("**Riesgo Alto: pólipo serrado**")
-        st.markdown(
-            "- Colonoscopia de vigilancia cada 3–5 años\n- Evaluación genética"
-        )
-    elif polyp10:
-        st.info("**Riesgo Intermedio: pólipos simples**")
-        st.markdown(
-            "- Colonoscopia de control a los 5 años\n- TSOMFi anual o TSOMFg bienal"
-        )
-
-    # 3. Síntomas urgentes
-    elif symptoms:
-        st.warning("**Síntomas:** derivar urgente para evaluacion medica")
-
-    # 4. Antecedente familiar
+        st.warning("Riesgo Alto: Enfermedad Inflamatoria Intestinal")
+        st.markdown("Colonoscopia cada 1–5 años.")
+    elif fap or fasha:
+        st.warning("Riesgo Alto: Poliposis Adenomatosa Familiar")
+        st.markdown("Colonoscopia cada 1–2 años.")
+    elif hamart:
+        st.warning("Riesgo Alto: Síndrome hamartomatoso")
+        st.markdown("Colonoscopia cada 1–2 años.")
+    elif serrated_synd:
+        st.warning("Riesgo Alto: Poliposis serrada")
+        st.markdown("Colonoscopia anual.")
+    elif polyp10 and advanced_poly and resected:
+        st.warning("Riesgo Alto: Adenoma avanzado resecado")
+        st.markdown("Colonoscopia a los 3 años + FIT anual.")
+    elif polyp10 and serrated and resected:
+        st.warning("Riesgo Alto: Pólipo serrado resecado")
+        st.markdown("Colonoscopia cada 3–5 años + evaluación genética.")
+    elif polyp10 and resected:
+        st.info("Riesgo Intermedio: Pólipos simples resecados")
+        st.markdown("Colonoscopia a los 5 años.")
+    elif symptoms := st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?"):
+        st.warning("Síntomas clínicos: requiere colonoscopia inmediata")
     elif family_crc:
         if family_before_60:
-            st.info("**Riesgo Incrementado:** familiar <60 años")
-            st.markdown(
-                "- Colonoscopia a los 40 años o 10 años antes\n- Repetir cada 5 años\n- TSOMFi anual o TSOMFg bienal"
-            )
+            st.info("Riesgo Incrementado: Familiar <60 años")
+            st.markdown("Colonoscopia a los 40 años o 10 años antes del caso + repetir cada 5 años.")
         else:
-            st.info("**Riesgo Incrementado:** familiar ≥60 años")
-            st.markdown(
-                "- Colonoscopia a los 50 años\n- Repetir cada 5 años\n- TSOMFi cada 2 años o TSOMFg bienal"
-            )
-
-    # 5. Riesgo Promedio
+            st.info("Riesgo Incrementado: Familiar ≥60 años")
+            st.markdown("Colonoscopia a los 50 años + repetir cada 5 años.")
+    elif 50 <= age <= 75:
+        st.success("Riesgo Promedio")
+        st.markdown("TSOMFi cada 2 años, colonoscopia cada 10 años, VCC cada 5 años, etc.")
     elif age < 50:
-        st.info("Menos de 50 años sin factores de riesgo: no requiere tamizaje")
-    elif age <= 75:
-        st.success("**Riesgo Promedio (50–75 años)**")
-        st.markdown(
-            "- TSOMFi cada 2 años\n- TSOMFg cada 2 años\n- Rectosigmoidoscopía cada 5 años\n- Colonoscopia cada 10 años\n- VCC cada 5 años"
-        )
-    else:
-        st.warning("Más de 75 años: evaluar caso a caso sin tamizaje rutinario")
+        st.info("Menor de 50 años sin factores: no requiere tamizaje")
+    elif age > 75:
+        st.info("Mayor de 75 años: evaluar caso a caso")
 
-    # Nota IMC
+    # Nota sobre IMC
     if bmi >= 25:
-        st.markdown("**Nota:** IMC elevado, factor de riesgo adicional")
+        st.markdown("**Nota:** IMC elevado: factor de riesgo adicional.")
 
 # Disclaimer
 st.markdown("---")
-st.markdown(
-    "**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso."
-)
+st.markdown("**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.")
