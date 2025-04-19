@@ -17,8 +17,10 @@ st.markdown(
 )
 
 # Inputs
+# Fecha de nacimiento: iniciar vacío y abrir calendario
 dob = st.date_input(
     "Fecha de nacimiento",
+    value=None,
     min_value=datetime(1900, 1, 1),
     max_value=datetime.today(),
     help="Haz clic para seleccionar tu fecha de nacimiento"
@@ -233,4 +235,5 @@ Opciones de tamizaje:
     # Nota IMC
     if bmi >= 25:
         st.markdown("**Nota:** IMC elevado, factor de riesgo adicional.")
+
 
