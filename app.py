@@ -20,13 +20,14 @@ st.markdown(
 )
 
 # Inputs
-# Fecha de nacimiento con selector de calendario
+# Fecha de nacimiento con selector de calendario (vacío al cargar)
 dob = st.date_input(
     "Fecha de nacimiento",
+    value=None,
     min_value=datetime(1900, 1, 1),
     max_value=datetime.today()
 )
-height_str = st.text_input("Altura (cm)", value="", placeholder="ej. 170")
+height_str = st.text_input("Altura (cm)", value="", placeholder="ej. 170")("Altura (cm)", value="", placeholder="ej. 170")
 weight_str = st.text_input("Peso (kg)", value="", placeholder="ej. 65")
 
 # Parse inputs
