@@ -131,6 +131,7 @@ if dob and height_cm and weight_kg:
     # Nota sobre IMC
     if bmi >= 25:
         st.markdown("**Nota:** IMC elevado: factor de riesgo adicional.")
+        st.markdown("Para mejorar tu salud y reducir riesgos, el IMC recomendado es entre 18.5 y 24.9. Consultá con un profesional para orientación nutricional y cambios sostenibles.")
 
     # Síntomas aparte
     if symptoms:
