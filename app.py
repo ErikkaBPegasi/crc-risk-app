@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime
+import re
 
 # Helper functions
 def calculate_age(dob):
@@ -9,6 +10,18 @@ def calculate_age(dob):
 def calculate_bmi(height_cm, weight_kg):
     height_m = height_cm / 100
     return round(weight_kg / (height_m ** 2), 1)
+
+# Parse date string to datetime
+def parse_dob(dob_str):
+    try:
+        # Expecting format DD/MM/YYYY or YYYY-MM-DD
+        if "/" in dob_str:
+            day, month, year = map(int, dob_str.split("/"))
+            return datetime(year, month, day)
+        else:
+            return datetime.fromisoformat(dob_str)
+    except Exception:
+        return None
 
 # App layout
 st.title("Evaluación de Riesgo para Tamizaje de Cáncer Colorrectal")
@@ -20,45 +33,48 @@ st.markdown(
 )
 
 # Inputs
-dob = st.date_input(
-    "Fecha de nacimiento", min_value=datetime(1900,1,1), max_value=datetime.today()
+dob_str = st.text_input(
+    "Fecha de nacimiento (DD/MM/AAAA)", value="", placeholder="DD/MM/AAAA"
 )
-height_str = st.text_input("Altura (cm)", value="")
-weight_str = st.text_input("Peso (kg)", value="")
+height_str = st.text_input("Altura (cm)", value="", placeholder="ej. 170")
+weight_str = st.text_input("Peso (kg)", value="", placeholder="ej. 65")
 
-# Parse height & weight
+# Parse inputs
+dob = parse_dob(dob_str) if dob_str else None
 height_cm = None
 weight_kg = None
 if height_str:
     try:
         height_cm = float(height_str)
     except ValueError:
-        st.error("Altura no válida")
+        st.error("Por favor ingresa un número válido para la altura.")
 if weight_str:
     try:
         weight_kg = float(weight_str)
     except ValueError:
-        st.error("Peso no válido")
+        st.error("Por favor ingresa un número válido para el peso.")
 
 # Risk factor checkboxes
-ibd = st.checkbox("Inflamación crónica del intestino (Crohn o colitis)")
-family_crc = st.checkbox("Familiar cercano con cáncer de colon o recto")
-hered = st.checkbox("Síndrome hereditario de riesgo (p.ej. Lynch)")
-advanced_adenoma = st.checkbox("Adenomas avanzados previamente detectados")
-fap = st.checkbox("Poliposis adenomatosa familiar (PAF)")
-polyp10 = st.checkbox("¿Te han encontrado un pólipo en el colon o recto en los últimos 10 años?")
+ibd = st.checkbox("¿Alguna vez te han dicho que tienes inflamación crónica en el intestino (Crohn o colitis ulcerativa)?")
+hered = st.checkbox("¿Te han dicho que tienes un síndrome hereditario que aumenta el riesgo de cáncer de colon (p.ej. Lynch)?")
+hamart = st.checkbox("¿Tienes o te han dicho que tienes un síndrome de pólipos poco común (Peutz-Jeghers, Cowden)?")
+fap = st.checkbox("¿Te han dicho que tienes muchos pólipos en el colon desde joven (poliposis familiar)?")
 
-# Only show serrated if a polyp was found
+family_crc = st.checkbox("¿Algún familiar cercano tuvo cáncer de colon o recto?")
+family_before_60 = False
+if family_crc:
+    family_before_60 = st.checkbox("¿Ese familiar fue diagnosticado antes de los 60 años?")
+
+polyp10 = st.checkbox("¿Te han encontrado algún pólipo en los últimos 10 años?")
+tmp_advanced = False
 tmp_serrated = False
 if polyp10:
-    tmp_serrated = st.checkbox("¿Te han dicho que esos pólipos son de tipo serrado o múltiples?")
+    tmp_advanced = st.checkbox("¿Fueron pólipos grandes o con riesgo alto?")
+    tmp_serrated = st.checkbox("¿Te han dicho que esos pólipos eran de tipo serrado?")
 
-# Symptom check
-symptoms = st.checkbox(
-    "Has tenido sangre en las heces, cambios en el hábito intestinal o pérdida de peso sin explicación?"
-)
+symptoms = st.checkbox("¿Has tenido sangre en las heces, cambios en el hábito intestinal o pérdida de peso sin explicación?")
 
-# Compute outputs
+# Compute outputs only when dob, height, weight are provided
 if dob and height_cm is not None and weight_kg is not None:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
@@ -67,48 +83,66 @@ if dob and height_cm is not None and weight_kg is not None:
     st.subheader("Resultado de la evaluación")
 
     # Validate age
-    if age <= 0:
-        st.error("Selecciona una fecha anterior a hoy.")
+    if age <= 0 or age > 120:
+        st.error("Por favor ingresa una fecha de nacimiento válida.")
         st.stop()
 
-    # 1. High-risk hereditary or IBD
-    if hered or ibd or fap:
-        st.warning("**Riesgo Incrementado – Hereditario/EII**")
+    # 1. Hereditary, EII, hamartomatous or PAF
+    if hered or ibd or hamart or fap:
+        st.warning("**Riesgo Alto/Incrementado – Genético/EII**")
         st.markdown(
             """
-            - Colonoscopia: cada 1–2 años (Lynch) o cada 1–5 años (EII).
+            - Colonoscopia: cada 1–2 años (Lynch o hamartomatosos).
+            - Colonoscopia: cada 1–5 años (EII, PAF).
             - Si no es posible: TSOMFi anual o TSOMFg bienal.
             """
         )
 
-    # 2. Family CRC (non-syndromic)
+    # 2. Family CRC
     elif family_crc:
-        st.info("**Riesgo Incrementado – Familiar**")
-        st.markdown(
-            """
-            - Colonoscopia: iniciar a los 40 años o 10 años antes del familiar más joven.
-            - Repetir cada 5 años.
-            - Alternativa: TSOMFi anual o TSOMFg bienal.
-            """
-        )
-
-    # 3. Post-polyp detection
-    elif polyp10:
-        # Further classify by serrated
-        if tmp_serrated:
-            st.warning("**Riesgo Incrementado – Poliposis Serrada**")
+        if family_before_60:
+            st.info("**Riesgo Incrementado – Familiar <60 años**")
             st.markdown(
                 """
-                - Colonoscopia de vigilancia cada 3–5 años.
-                - Evaluación genética si es necesario.
+                - Colonoscopia: iniciar a los 40 años o 10 años antes del caso familiar joven.
+                - Repetir cada 5 años.
+                - Alternativa: TSOMFi anual o TSOMFg bienal.
                 """
             )
         else:
-            st.info("**Historial de Pólipos**")
+            st.info("**Riesgo Incrementado – Familiar ≥60 años**")
             st.markdown(
                 """
-                - Colonoscopia de control en 3 años.
-                - Entre controles: TSOMFi anual o TSOMFg bienal.
+                - Colonoscopia: iniciar a los 50 años.
+                - Repetir cada 5 años.
+                - Alternativa: TSOMFi cada 2 años o TSOMFg bienal.
+                """
+            )
+
+    # 3. Polyp history
+    elif polyp10:
+        if tmp_advanced:
+            st.warning("**Riesgo Alto – Adenomas Avanzados**")
+            st.markdown(
+                """
+                - Colonoscopia: control en 3 años.
+                - Interim: TSOMFi anual o TSOMFg bienal.
+                """
+            )
+        elif tmp_serrated:
+            st.warning("**Riesgo Alto – Poliposis Serrada**")
+            st.markdown(
+                """
+                - Colonoscopia: vigilancia cada 3–5 años.
+                - Evaluación genética.
+                """
+            )
+        else:
+            st.info("**Riesgo Intermedio – Historial de Pólipos**")
+            st.markdown(
+                """
+                - Colonoscopia: control en 5 años.
+                - Alternativa: TSOMFi anual o TSOMFg bienal.
                 """
             )
 
@@ -116,9 +150,9 @@ if dob and height_cm is not None and weight_kg is not None:
     elif symptoms:
         st.warning("**Síntomas presentes**: requiere evaluación médica inmediata.")
 
-    # 5. Average risk under 50
+    # 5. Average risk <50
     elif age < 50:
-        st.info("No se recomienda tamizaje si tienes menos de 50 años sin otros factores de riesgo.")
+        st.info("No se recomienda tamizaje <50 años sin otros factores de riesgo.")
 
     # 6. Average risk 50–75
     elif age <= 75:
@@ -130,13 +164,14 @@ if dob and height_cm is not None and weight_kg is not None:
             - TSOMFg cada 2 años
             - Rectosigmoidoscopía cada 5 años
             - Colonoscopia cada 10 años
+            - Colonoscopia Virtual (VCC) cada 5 años como alternativa no invasiva
             """
         )
 
     # 7. Over 75
     else:
-        st.warning("No se recomienda tamizaje programático >75 años sin evaluación individual.")
+        st.warning("No se recomienda tamizaje programático >75 años sin evaluación individualizada.")
 
     # BMI note
     if bmi >= 25:
-        st.markdown("**Nota:** Tu IMC es elevado, factor de riesgo adicional.")
+        st.markdown("**Nota:** Tu IMC es elevado, factor de riesgo adicional para CCR.")
