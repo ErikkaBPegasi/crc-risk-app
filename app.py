@@ -1,6 +1,5 @@
 import streamlit as st
 from datetime import datetime
-import re
 
 # Helper functions
 def calculate_age(dob):
@@ -10,18 +9,6 @@ def calculate_age(dob):
 def calculate_bmi(height_cm, weight_kg):
     height_m = height_cm / 100
     return round(weight_kg / (height_m ** 2), 1)
-
-# Parse date string to datetime
-def parse_dob(dob_str):
-    try:
-        # Expecting format DD/MM/YYYY or YYYY-MM-DD
-        if "/" in dob_str:
-            day, month, year = map(int, dob_str.split("/"))
-            return datetime(year, month, day)
-        else:
-            return datetime.fromisoformat(dob_str)
-    except Exception:
-        return None
 
 # App layout
 st.title("Evaluación de Riesgo para Tamizaje de Cáncer Colorrectal")
@@ -33,14 +20,16 @@ st.markdown(
 )
 
 # Inputs
-dob_str = st.text_input(
-    "Fecha de nacimiento (DD/MM/AAAA)", value="", placeholder="DD/MM/AAAA"
+# Fecha de nacimiento con selector de calendario
+dob = st.date_input(
+    "Fecha de nacimiento",
+    min_value=datetime(1900, 1, 1),
+    max_value=datetime.today()
 )
 height_str = st.text_input("Altura (cm)", value="", placeholder="ej. 170")
 weight_str = st.text_input("Peso (kg)", value="", placeholder="ej. 65")
 
 # Parse inputs
-dob = parse_dob(dob_str) if dob_str else None
 height_cm = None
 weight_kg = None
 if height_str:
@@ -74,7 +63,7 @@ if polyp10:
 
 symptoms = st.checkbox("¿Has tenido sangre en las heces, cambios en el hábito intestinal o pérdida de peso sin explicación?")
 
-# Compute outputs only when dob, height, weight are provided
+# Compute outputs only when all inputs are provided
 if dob and height_cm is not None and weight_kg is not None:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
@@ -87,7 +76,7 @@ if dob and height_cm is not None and weight_kg is not None:
         st.error("Por favor ingresa una fecha de nacimiento válida.")
         st.stop()
 
-    # 1. Hereditary, EII, hamartomatous or PAF
+    # 1. Hereditario / EII / Hamartomatosos / PAF
     if hered or ibd or hamart or fap:
         st.warning("**Riesgo Alto/Incrementado – Genético/EII**")
         st.markdown(
@@ -98,13 +87,13 @@ if dob and height_cm is not None and weight_kg is not None:
             """
         )
 
-    # 2. Family CRC
+    # 2. Familiar con CCR\  
     elif family_crc:
         if family_before_60:
             st.info("**Riesgo Incrementado – Familiar <60 años**")
             st.markdown(
                 """
-                - Colonoscopia: iniciar a los 40 años o 10 años antes del caso familiar joven.
+                - Colonoscopia: iniciar a los 40 años o 10 años antes del caso familiar más joven.
                 - Repetir cada 5 años.
                 - Alternativa: TSOMFi anual o TSOMFg bienal.
                 """
@@ -119,7 +108,7 @@ if dob and height_cm is not None and weight_kg is not None:
                 """
             )
 
-    # 3. Polyp history
+    # 3. Historial de pólipos\  
     elif polyp10:
         if tmp_advanced:
             st.warning("**Riesgo Alto – Adenomas Avanzados**")
@@ -146,15 +135,15 @@ if dob and height_cm is not None and weight_kg is not None:
                 """
             )
 
-    # 4. Symptoms
+    # 4. Síntomas\  
     elif symptoms:
         st.warning("**Síntomas presentes**: requiere evaluación médica inmediata.")
 
-    # 5. Average risk <50
+    # 5. Riesgo promedio <50\  
     elif age < 50:
         st.info("No se recomienda tamizaje <50 años sin otros factores de riesgo.")
 
-    # 6. Average risk 50–75
+    # 6. Riesgo promedio 50–75\  
     elif age <= 75:
         st.success("**Riesgo Promedio**: 50–75 años sin factores adicionales.")
         st.markdown(
@@ -168,10 +157,10 @@ if dob and height_cm is not None and weight_kg is not None:
             """
         )
 
-    # 7. Over 75
+    # 7. >75 años
     else:
         st.warning("No se recomienda tamizaje programático >75 años sin evaluación individualizada.")
 
-    # BMI note
+    # Nota IMC
     if bmi >= 25:
         st.markdown("**Nota:** Tu IMC es elevado, factor de riesgo adicional para CCR.")
