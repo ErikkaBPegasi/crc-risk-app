@@ -28,6 +28,8 @@ height_str = st.text_input("Altura (cm)", placeholder="Ej: 170", help="Mide tu a
 weight_str = st.text_input("Peso (kg)", placeholder="Ej: 65", help="Ingresa tu peso actual")
 
 # Parse numeric inputs
+age = None
+bmi = None
 height_cm = None
 weight_kg = None
 if height_str:
@@ -40,6 +42,16 @@ if weight_str:
         weight_kg = float(weight_str)
     except:
         st.error("Peso inválido.")
+
+if dob and height_str and weight_str:
+    try:
+        height_cm = float(height_str)
+        weight_kg = float(weight_str)
+        age = calculate_age(dob)
+        bmi = calculate_bmi(height_cm, weight_kg)
+        st.markdown(f"**Edad:** {age} años | **IMC:** {bmi}")
+    except:
+        st.error("Por favor ingresá valores válidos para altura y peso.")
 
 # 1. Antecedentes personales de salud
 st.markdown("**1. Antecedentes personales de salud**")
@@ -72,7 +84,7 @@ if polyp10:
 symptoms = st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?")
 
 # Evaluación de riesgo y recomendaciones
-if dob and height_cm and weight_kg:
+if age and bmi:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
 
@@ -142,3 +154,4 @@ if dob and height_cm and weight_kg:
 st.markdown("---")
 st.markdown("""**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.  
 📄 [Accedé a la guía oficial del Instituto Nacional del Cáncer](https://bancos.salud.gob.ar/sites/default/files/2023-09/recomendaciones-para-el-tamizaje-organizado-cancer-colorrectal-poblacion-de-riesgo-promedio-argentina.pdf)""")
+
