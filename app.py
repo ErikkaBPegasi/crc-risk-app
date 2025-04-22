@@ -80,10 +80,20 @@ if polyp10:
     serrated = st.checkbox("¿Alguno de los pólipos era del tipo serrado?")
     resected = st.checkbox("¿Te realizaron una resección o extirpación de esos pólipos o adenomas?")
 
-# Evaluación de síntomas (fuera del bloque de riesgo)
-symptoms = st.checkbox("¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?")
+# Evaluación de síntomas (prioritario sobre tamizaje)
+symptoms = st.checkbox(
+    "¿Tenés sangrado por recto, cambios en el ritmo intestinal o pérdida de peso sin explicación?",
+    help="Estos síntomas requieren diagnóstico oportuno, no tamizaje."
+)
+if symptoms:
+    st.markdown("---")
+    st.warning(
+        "**Atención:** Presentás síntomas clínicos (sangrado, cambios intestinales o pérdida de peso sin causa aparente). "
+        "Se recomienda evaluación médica urgente con colonoscopia diagnóstica."
+    )
+    st.stop()
 
-# Evaluación de riesgo y recomendaciones
+# Evaluación de riesgo y recomendaciones (solo asintomáticos)
 if age and bmi:
     age = calculate_age(dob)
     bmi = calculate_bmi(height_cm, weight_kg)
@@ -134,7 +144,8 @@ if age and bmi:
         - 📹 **Videocolonoscopía (VCC)** cada 5 años
         - 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
         - 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
-        """)
+        """
+        )
     elif age < 50:
         st.info("Menor de 50 años sin factores: no requiere tamizaje")
     elif age > 75:
@@ -145,13 +156,7 @@ if age and bmi:
         st.markdown(f"**Nota:** IMC elevado ({bmi}): factor de riesgo adicional.")
         st.markdown("Para mejorar tu salud y reducir riesgos, el IMC recomendado es entre 18.5 y 24.9. Consultá con un profesional para orientación nutricional y cambios sostenibles.")
 
-    # Síntomas aparte
-    if symptoms:
-        st.markdown("---")
-        st.warning("**Atención:** Presentás síntomas clínicos (sangrado, cambios intestinales o pérdida de peso sin causa aparente). Se recomienda evaluación médica con colonoscopia inmediata.")
-
 # Disclaimer
 st.markdown("---")
 st.markdown("""**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.  
 📄 [Accedé a la guía oficial del Instituto Nacional del Cáncer](https://bancos.salud.gob.ar/sites/default/files/2023-09/recomendaciones-para-el-tamizaje-organizado-cancer-colorrectal-poblacion-de-riesgo-promedio-argentina.pdf)""")
-
