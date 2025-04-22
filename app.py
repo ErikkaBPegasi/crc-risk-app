@@ -94,62 +94,57 @@ if symptoms:
     st.stop()
 
 # Evaluación de riesgo y recomendaciones (solo asintomáticos)
-if age and bmi:
-    age = calculate_age(dob)
-    bmi = calculate_bmi(height_cm, weight_kg)
+if age is not None and bmi is not None:
+    # Recolectar recomendaciones con prioridad
+    recs = []
+    if hered:
+        recs.append((10, "Riesgo Alto: Síndrome de Lynch", "Colonoscopia cada 1–2 años."))
+    if ibd:
+        recs.append((9, "Riesgo Alto: Enfermedad Inflamatoria Intestinal", "Colonoscopia cada 1–5 años."))
+    if fap or fasha:
+        recs.append((8, "Riesgo Alto: Poliposis Adenomatosa Familiar", "Colonoscopia cada 1–2 años."))
+    if serrated_synd:
+        recs.append((7, "Riesgo Alto: Poliposis serrada", "Colonoscopia anual."))
+    if polyp10 and advanced_poly and resected:
+        recs.append((6, "Riesgo Alto: Adenoma avanzado resecado", "Colonoscopia a los 3 años + FIT anual."))
+    if polyp10 and serrated and resected:
+        recs.append((6, "Riesgo Alto: Pólipo serrado resecado", "Colonoscopia cada 3–5 años + evaluación genética."))
+    if polyp10 and resected and not (advanced_poly or serrated):
+        recs.append((5, "Riesgo Intermedio: Pólipos simples resecados", "Colonoscopia a los 5 años."))
+    if family_crc:
+        if family_before_60:
+            recs.append((4, "Riesgo Incrementado: Familiar <60 años", "Colonoscopia a los 40 años o 10 años antes del caso + repetir cada 5 años."))
+        else:
+            recs.append((3, "Riesgo Incrementado: Familiar ≥60 años", "Colonoscopia a los 50 años + repetir cada 5 años."))
+    # Riesgo promedio
+    if 50 <= age <= 75:
+        recs.append((2,
+            "Riesgo Promedio",
+            """
+**Tu médico puede ayudarte a revisar las siguientes opciones disponibles de tamizaje, considerando la disponibilidad de las pruebas con tu prestador de salud:**
+
+- ✅ **Test de sangre oculta inmunoquímico (TSOMFi)** cada 2 años *(recomendado como primera opción)*
+- 🟡 **Test con guayaco (TSOMFg)** cada 2 años *(si no se dispone de TSOMFi)*
+- 🔍 **Colonoscopia** cada 10 años
+- 📹 **Videocolonoscopía (VCC)** cada 5 años
+- 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
+- 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
+"""
+        ))
+    # <50 o >75
+    if age < 50:
+        recs.append((1, "Menor de 50 años sin factores", "No requiere tamizaje."))
+    elif age > 75:
+        recs.append((1, "Mayor de 75 años", "Evaluar caso a caso."))
+
+    # Seleccionar la recomendación de mayor prioridad
+    priority, title, text = max(recs, key=lambda x: x[0])
 
     st.markdown(f"**Edad:** {age} años | **IMC:** {bmi}")
     st.markdown("---")
     st.subheader("Estrategia de tamizaje recomendada")
-
-    if hered:
-        st.warning("Riesgo Alto: Síndrome de Lynch")
-        st.markdown("Colonoscopia cada 1–2 años.")
-    elif ibd:
-        st.warning("Riesgo Alto: Enfermedad Inflamatoria Intestinal")
-        st.markdown("Colonoscopia cada 1–5 años.")
-    elif fap or fasha:
-        st.warning("Riesgo Alto: Poliposis Adenomatosa Familiar")
-        st.markdown("Colonoscopia cada 1–2 años.")
-    elif hamart:
-        st.warning("Riesgo Alto: Síndrome hamartomatoso")
-        st.markdown("Colonoscopia cada 1–2 años.")
-    elif serrated_synd:
-        st.warning("Riesgo Alto: Poliposis serrada")
-        st.markdown("Colonoscopia anual.")
-    elif polyp10 and advanced_poly and resected:
-        st.warning("Riesgo Alto: Adenoma avanzado resecado")
-        st.markdown("Colonoscopia a los 3 años + FIT anual.")
-    elif polyp10 and serrated and resected:
-        st.warning("Riesgo Alto: Pólipo serrado resecado")
-        st.markdown("Colonoscopia cada 3–5 años + evaluación genética.")
-    elif polyp10 and resected:
-        st.info("Riesgo Intermedio: Pólipos simples resecados")
-        st.markdown("Colonoscopia a los 5 años.")
-    elif family_crc:
-        if family_before_60:
-            st.info("Riesgo Incrementado: Familiar <60 años")
-            st.markdown("Colonoscopia a los 40 años o 10 años antes del caso + repetir cada 5 años.")
-        else:
-            st.info("Riesgo Incrementado: Familiar ≥60 años")
-            st.markdown("Colonoscopia a los 50 años + repetir cada 5 años.")
-    elif 50 <= age <= 75:
-        st.success("Riesgo Promedio")
-        st.markdown("""
-        **Tu médico puede ayudarte a revisar las siguientes opciones disponibles de tamizaje, considerando la disponibilidad de las pruebas con tu prestador de salud:**
-
-        - ✅ **Test de sangre oculta inmunoquímico (TSOMFi)** cada 2 años *(recomendado como primera opción)*
-        - 🟡 **Test con guayaco (TSOMFg)** cada 2 años *(si no se dispone de TSOMFi)*
-        - 🔍 **Colonoscopia** cada 10 años
-        - 📹 **Videocolonoscopía (VCC)** cada 5 años
-        - 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
-        - 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
-        """
-        )
-    elif age < 50:
-        st.info("Menor de 50 años sin factores: no requiere tamizaje")
-    elif age > 75:
-        st.info("Mayor de 75 años: evaluar caso a caso")
+    st.warning(title)
+    st.markdown(text)
 
     # Nota sobre IMC
     if bmi >= 25:
@@ -158,5 +153,9 @@ if age and bmi:
 
 # Disclaimer
 st.markdown("---")
-st.markdown("""**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.  
-📄 [Accedé a la guía oficial del Instituto Nacional del Cáncer](https://bancos.salud.gob.ar/sites/default/files/2023-09/recomendaciones-para-el-tamizaje-organizado-cancer-colorrectal-poblacion-de-riesgo-promedio-argentina.pdf)""")
+st.markdown(
+    """
+**Aviso:** Esta herramienta tiene fines educativos e informativos y está adaptada a la guía \"Recomendaciones para el tamizaje de CCR en población de riesgo promedio en Argentina 2022\". No constituye una consulta médica ni reemplaza el consejo de un profesional de la salud. Te invitamos a usar esta información como base para conversar con tu médico sobre tu riesgo de cáncer colorrectal y las alternativas recomendadas en tu caso.  
+📄 [Accedé a la guía oficial del Instituto Nacional del Cáncer](https://bancos.salud.gob.ar/sites/default/files/2023-09/recomendaciones-para-el-tamizaje-organizado-cancer-colorrectal-poblacion-de-riesgo-promedio-argentina.pdf)
+"""
+)
