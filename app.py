@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime
+from io import BytesIO
+from fpdf import FPDF
 
 # Helper functions
 def calculate_age(dob):
@@ -9,6 +11,22 @@ def calculate_age(dob):
 def calculate_bmi(height_cm, weight_kg):
     height_m = height_cm / 100
     return round(weight_kg / (height_m ** 2), 1)
+
+def generar_pdf(edad, imc, resumen):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Resultado de evaluación para cáncer colorrectal", ln=1, align="C")
+    pdf.ln(10)
+    pdf.cell(200, 10, txt=f"Edad: {edad} años", ln=1)
+    pdf.cell(200, 10, txt=f"IMC: {imc}", ln=1)
+    pdf.ln(5)
+    pdf.multi_cell(0, 10, resumen)
+
+    buffer = BytesIO()
+    pdf.output(buffer)
+    buffer.seek(0)
+    return buffer
 
 # App layout
 st.title("Evaluación de riesgo para tamizaje de cáncer colorrectal")
@@ -96,34 +114,44 @@ if st.button("Evaluar riesgo"):
         if hered:
             st.warning("Riesgo Alto: Síndrome de Lynch")
             st.markdown("Colonoscopia cada 1–2 años.")
+            resumen = "Riesgo alto debido a síndrome de Lynch. Se recomienda colonoscopia cada 1–2 años."
         elif ibd:
             st.warning("Riesgo Alto: Enfermedad Inflamatoria Intestinal")
             st.markdown("Colonoscopia cada 1–5 años.")
+            resumen = "Riesgo alto por enfermedad inflamatoria intestinal. Colonoscopia entre 1–5 años."
         elif fap or fasha:
             st.warning("Riesgo Alto: Poliposis Adenomatosa Familiar")
             st.markdown("Colonoscopia cada 1–2 años.")
+            resumen = "Riesgo alto por poliposis adenomatosa familiar. Colonoscopia cada 1–2 años."
         elif hamart:
             st.warning("Riesgo Alto: Síndrome hamartomatoso")
             st.markdown("Colonoscopia cada 1–2 años.")
+            resumen = "Riesgo alto por síndrome hamartomatoso. Colonoscopia cada 1–2 años."
         elif serrated_synd:
             st.warning("Riesgo Alto: Poliposis serrada")
             st.markdown("Colonoscopia anual.")
+            resumen = "Riesgo alto por poliposis serrada. Colonoscopia anual."
         elif polyp10 and advanced_poly and resected:
             st.warning("Riesgo Alto: Adenoma avanzado resecado")
             st.markdown("Colonoscopia a los 3 años + FIT anual.")
+            resumen = "Riesgo alto por adenoma avanzado resecado. Colonoscopia a los 3 años + FIT anual."
         elif polyp10 and serrated and resected:
             st.warning("Riesgo Alto: Pólipo serrado resecado")
             st.markdown("Colonoscopia cada 3–5 años + evaluación genética.")
+            resumen = "Riesgo alto por pólipo serrado resecado. Colonoscopia 3–5 años + genética."
         elif polyp10 and resected:
             st.info("Riesgo Intermedio: Pólipos simples resecados")
             st.markdown("Colonoscopia a los 5 años.")
+            resumen = "Riesgo intermedio por pólipos simples. Colonoscopia a los 5 años."
         elif family_crc:
             if family_before_60:
                 st.info("Riesgo Incrementado: Familiar <60 años")
                 st.markdown("Colonoscopia a los 40 años o 10 años antes del caso + repetir cada 5 años.")
+                resumen = "Riesgo incrementado: antecedente familiar <60 años. Colonoscopia temprana."
             else:
                 st.info("Riesgo Incrementado: Familiar ≥60 años")
                 st.markdown("Colonoscopia a los 50 años + repetir cada 5 años.")
+                resumen = "Riesgo incrementado: familiar ≥60 años. Colonoscopia desde los 50."
         elif 50 <= age <= 75:
             st.success("Riesgo Promedio")
             st.markdown("""
@@ -136,25 +164,36 @@ if st.button("Evaluar riesgo"):
             - 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
             - 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
             """)
-            resumen = "📝 **Resumen:** Cumplís con los criterios de edad (50–75 años) y no se detectaron factores de riesgo elevado. Se recomienda continuar con el tamizaje de acuerdo con las opciones disponibles con tu prestador de salud."
+            resumen = "📝 Resumen: Aunque no se detectaron factores de riesgo adicionales, cumplís con los criterios de edad (50–75 años). Se recomienda continuar con el tamizaje de acuerdo con las opciones disponibles con tu prestador de salud."
         elif age < 50:
             st.info("Menor de 50 años sin factores: no requiere tamizaje")
+            resumen = "Actualmente no cumplís criterios para tamizaje por edad."
         elif age > 75:
             st.info("Mayor de 75 años: evaluar caso a caso")
+            resumen = "Por tu edad, se recomienda evaluar caso a caso con tu médico tratante."
 
-        # Mostrar resumen si aplica
-        if resumen:
-            st.markdown(resumen)
-
-        # Nota sobre IMC
+        # IMC nota
         if bmi >= 25:
             st.markdown(f"**Nota:** IMC elevado ({bmi}): factor de riesgo adicional.")
-            st.markdown("Para mejorar tu salud y reducir riesgos, el IMC recomendado es entre 18.5 y 24.9. Consultá con un profesional para orientación nutricional y cambios sostenibles.")
+            st.markdown("Para mejorar tu salud y reducir riesgos, el IMC recomendado es entre 18.5 y 24.9. Consultá con un profesional para orientación nutricional.")
 
-        # Síntomas aparte
+        # Síntomas
         if symptoms:
+            st.warning("**Atención:** Presentás síntomas clínicos. Se recomienda consulta médica inmediata.")
+
+        # Mostrar resumen
+        if resumen:
             st.markdown("---")
-            st.warning("**Atención:** Presentás síntomas clínicos (sangrado, cambios intestinales o pérdida de peso sin causa aparente). Se recomienda evaluación médica prioritaria para posible indicación de colonoscopia")
+            st.markdown(f"📋 **Resumen final:** {resumen}")
+
+            # Generar PDF
+            pdf_buffer = generar_pdf(age, bmi, resumen)
+            st.download_button(
+                label="📥 Descargar resumen en PDF",
+                data=pdf_buffer,
+                file_name="reporte_riesgo_crc.pdf",
+                mime="application/pdf"
+            )
 
 # Disclaimer
 st.markdown("---")
