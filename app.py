@@ -91,6 +91,8 @@ if st.button("Evaluar riesgo"):
         st.markdown("---")
         st.subheader("Estrategia de tamizaje recomendada")
 
+        resumen = ""
+
         if hered:
             st.warning("Riesgo Alto: Síndrome de Lynch")
             st.markdown("Colonoscopia cada 1–2 años.")
@@ -134,10 +136,15 @@ if st.button("Evaluar riesgo"):
             - 🔬 **Rectosigmoidoscopía (RSC)** cada 5 años *(sola o combinada con TSOMFi anual)*
             - 🧭 **Colonoscopia virtual** *(solo si no se dispone de las anteriores)*
             """)
+            resumen = "📝 **Resumen:** Cumplís con los criterios de edad (50–75 años) y no se detectaron factores de riesgo elevado. Se recomienda continuar con el tamizaje de acuerdo con las opciones disponibles con tu prestador de salud."
         elif age < 50:
             st.info("Menor de 50 años sin factores: no requiere tamizaje")
         elif age > 75:
             st.info("Mayor de 75 años: evaluar caso a caso")
+
+        # Mostrar resumen si aplica
+        if resumen:
+            st.markdown(resumen)
 
         # Nota sobre IMC
         if bmi >= 25:
