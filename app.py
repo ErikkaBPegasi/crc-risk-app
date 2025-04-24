@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from io import BytesIO
-from fpdf import FPDF
+# from fpdf import FPDF  # Desactivado temporalmente para evitar error
 
 # Helper functions
 def calculate_age(dob):
@@ -12,21 +12,21 @@ def calculate_bmi(height_cm, weight_kg):
     height_m = height_cm / 100
     return round(weight_kg / (height_m ** 2), 1)
 
-def generar_pdf(edad, imc, resumen):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Resultado de evaluación para cáncer colorrectal", ln=1, align="C")
-    pdf.ln(10)
-    pdf.cell(200, 10, txt=f"Edad: {edad} años", ln=1)
-    pdf.cell(200, 10, txt=f"IMC: {imc}", ln=1)
-    pdf.ln(5)
-    pdf.multi_cell(0, 10, resumen)
-
-    buffer = BytesIO()
-    pdf.output(buffer)
-    buffer.seek(0)
-    return buffer
+# def generar_pdf(edad, imc, resumen):
+#     pdf = FPDF()
+#     pdf.add_page()
+#     pdf.set_font("Arial", size=12)
+#     pdf.cell(200, 10, txt="Resultado de evaluación para cáncer colorrectal", ln=1, align="C")
+#     pdf.ln(10)
+#     pdf.cell(200, 10, txt=f"Edad: {edad} años", ln=1)
+#     pdf.cell(200, 10, txt=f"IMC: {imc}", ln=1)
+#     pdf.ln(5)
+#     pdf.multi_cell(0, 10, resumen)
+#
+#     buffer = BytesIO()
+#     pdf.output(buffer)
+#     buffer.seek(0)
+#     return buffer
 
 # App layout
 st.title("Evaluación de riesgo para tamizaje de cáncer colorrectal")
@@ -185,15 +185,6 @@ if st.button("Evaluar riesgo"):
         if resumen:
             st.markdown("---")
             st.markdown(f"📋 **Resumen final:** {resumen}")
-
-            # Generar PDF
-            pdf_buffer = generar_pdf(age, bmi, resumen)
-            st.download_button(
-                label="📥 Descargar resumen en PDF",
-                data=pdf_buffer,
-                file_name="reporte_riesgo_crc.pdf",
-                mime="application/pdf"
-            )
 
 # Disclaimer
 st.markdown("---")
